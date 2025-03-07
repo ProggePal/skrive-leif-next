@@ -14,16 +14,23 @@ export default function Page() {
   const [isEditing, setIsEditing] = useState(true);
   const [selectedCommentIndex, setSelectedCommentIndex] = useState<number | null>(null);
   const [commentStates, setCommentStates] = useState<Record<number, boolean>>({});
+  const [lastEscTime, setLastEscTime] = useState<number>(0);
   const contentRef = useRef<HTMLDivElement>(null);
 
   // Initialize comment states when we get new comments
   useEffect(() => {
-    if (object?.comments) {
-      const newStates: Record<number, boolean> = {};
-      object.comments.forEach((_, index) => {
-        newStates[index] = false; // Start with original version
+    const comments = object?.comments;
+    if (comments?.length) {
+      setCommentStates(prev => {
+        const newStates = { ...prev };
+        comments.forEach((_, index) => {
+          // Only initialize state for new comments
+          if (!(index in newStates)) {
+            newStates[index] = false;
+          }
+        });
+        return newStates;
       });
-      setCommentStates(newStates);
     }
   }, [object?.comments]);
 
@@ -68,7 +75,7 @@ export default function Page() {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.ctrlKey && e.key === 'Enter') {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
       handleSubmit();
     }
   };
@@ -92,6 +99,15 @@ export default function Page() {
 
   const handleCommentNavigation = useCallback((e: KeyboardEvent) => {
     const comments = object?.comments;
+    if (e.key === 'Escape' && !isEditing) {
+      const now = Date.now();
+      if (now - lastEscTime < 500) { // 500ms window for double-press
+        handleBack();
+      }
+      setLastEscTime(now);
+      return;
+    }
+
     if (!comments?.length) return;
 
     if (e.key === 'ArrowLeft') {
@@ -127,14 +143,14 @@ export default function Page() {
         }
       }
     }
-  }, [object?.comments, selectedCommentIndex, commentStates, isCommentComplete]);
+  }, [object?.comments, selectedCommentIndex, commentStates, isCommentComplete, lastEscTime]);
 
   useEffect(() => {
     if (!isEditing && object?.comments?.length) {
       window.addEventListener('keydown', handleCommentNavigation);
       return () => window.removeEventListener('keydown', handleCommentNavigation);
     }
-  }, [isEditing, object?.comments, handleCommentNavigation]);
+  }, [isEditing, object?.comments, handleCommentNavigation, lastEscTime]);
 
   const highlightText = useCallback((text: string) => {
     if (!contentRef.current) return;
@@ -176,19 +192,67 @@ export default function Page() {
             onKeyDown={handleKeyDown}
             data-placeholder="Enter your text here..."
           />
-          {!isEditing && (
-            <button className="back-button" onClick={handleBack}>
-              Edit
-            </button>
-          )}
+          <div className="help-text">
+            {isEditing ? (
+              <span>When you're done, press ⌘ + Enter to analyze your text</span>
+            ) : (
+              <span>Use ← → to navigate, Space to swap text, double-Esc to edit</span>
+            )}
+          </div>
         </div>
-        <button 
-          className="analyze-button"
-          onClick={handleSubmit}
-          disabled={!isEditing}
-        >
-          Analyze
-        </button>
+        <div className="controls-container">
+          <div className="left-controls">
+            {!isEditing && (
+              <button className="control-button" onClick={handleBack}>
+                Edit
+              </button>
+            )}
+          </div>
+          <div className="right-controls">
+            {isEditing ? (
+              <button 
+                className="control-button analyze-button"
+                onClick={handleSubmit}
+                disabled={!isEditing}
+              >
+                Analyze
+              </button>
+            ) : (
+              <div className="navigation-controls">
+                <button 
+                  className="control-button"
+                  onClick={() => {
+                    const comments = object?.comments;
+                    if (comments?.length) {
+                      setSelectedCommentIndex(prev => 
+                        prev === null ? comments.length - 1 : 
+                        prev === 0 ? comments.length - 1 : 
+                        prev - 1
+                      );
+                    }
+                  }}
+                >
+                  ←
+                </button>
+                <button 
+                  className="control-button"
+                  onClick={() => {
+                    const comments = object?.comments;
+                    if (comments?.length) {
+                      setSelectedCommentIndex(prev => 
+                        prev === null ? 0 : 
+                        prev === comments.length - 1 ? 0 : 
+                        prev + 1
+                      );
+                    }
+                  }}
+                >
+                  →
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
 
         {object?.comments?.map((comment, index) => (
           <div 
@@ -203,11 +267,24 @@ export default function Page() {
             <p className="sender">Original: {comment?.os}</p>
             <p>Improved: {comment?.is}</p>
             <p>Reason: {comment?.rsn}</p>
-            <p className="version-indicator">
-              {isCommentComplete(comment) ? (
-                commentStates[index] ? 'Using Improved Version' : 'Using Original Version'
-              ) : 'Loading...'}
-            </p>
+            <div className="comment-controls">
+              <button 
+                className="swap-button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (comment && isCommentComplete(comment) && comment.os && comment.is) {
+                    updateContentWithSwap(comment.os, comment.is, index);
+                  }
+                }}
+              >
+                {commentStates[index] ? 'Use Original' : 'Use Improved'}
+              </button>
+              <span className="version-indicator">
+                {isCommentComplete(comment) ? (
+                  commentStates[index] ? 'Using Improved Version' : 'Using Original Version'
+                ) : 'Loading...'}
+              </span>
+            </div>
           </div>
         ))}
       </div>
@@ -257,31 +334,85 @@ export default function Page() {
           background-color: #f9f9f9;
         }
 
-        .back-button {
-          position: absolute;
-          top: 1rem;
-          right: 1rem;
+        .help-text {
+          font-size: 0.9rem;
+          color: #666;
+          margin-top: 0.5rem;
+          text-align: left;
+          padding-left: 1rem;
+        }
+
+        .controls-container {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin: 1rem 0;
+        }
+
+        .left-controls, .right-controls {
+          display: flex;
+          gap: 0.5rem;
+        }
+
+        .control-button {
           padding: 0.5rem 1rem;
           background-color: #f0f0f0;
           border: 1px solid #ccc;
           border-radius: 4px;
           cursor: pointer;
+          font-size: 1rem;
+          transition: all 0.2s ease;
         }
 
-        .analyze-button {
-          padding: 0.75rem 1.5rem;
-          font-size: 16px;
+        .control-button:hover {
+          background-color: #e0e0e0;
+        }
+
+        .control-button.analyze-button {
           background-color: #0070f3;
           color: white;
           border: none;
-          border-radius: 8px;
-          cursor: pointer;
-          align-self: flex-end;
         }
 
-        .analyze-button:disabled {
+        .control-button.analyze-button:hover {
+          background-color: #0051b3;
+        }
+
+        .control-button.analyze-button:disabled {
           background-color: #ccc;
           cursor: not-allowed;
+        }
+
+        .navigation-controls {
+          display: flex;
+          gap: 0.5rem;
+        }
+
+        .comment-controls {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-top: 0.5rem;
+        }
+
+        .swap-button {
+          padding: 0.25rem 0.5rem;
+          background-color: #f0f0f0;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 0.9rem;
+          transition: all 0.2s ease;
+        }
+
+        .swap-button:hover {
+          background-color: #e0e0e0;
+        }
+
+        .version-indicator {
+          font-size: 0.9em;
+          color: #666;
+          font-style: italic;
         }
 
         .comment-box {
@@ -305,13 +436,6 @@ export default function Page() {
         .sender {
           font-weight: bold;
           font-family: 'Courier New', Courier, monospace;
-        }
-
-        .version-indicator {
-          font-size: 0.9em;
-          color: #666;
-          margin-top: 0.5rem;
-          font-style: italic;
         }
       `}</style>
     </div>
