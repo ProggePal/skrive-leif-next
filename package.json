@@ -11,10 +11,18 @@
   "dependencies": {
     "@ai-sdk/openai": "^1.2.1",
     "@ai-sdk/react": "^1.1.21",
+    "@radix-ui/react-slot": "^1.1.2",
+    "@radix-ui/react-toggle": "^1.1.2",
     "ai": "^4.1.54",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "embla-carousel-react": "^8.5.2",
+    "lucide-react": "^0.479.0",
     "next": "15.2.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "tailwind-merge": "^3.0.2",
+    "tailwindcss-animate": "^1.0.7",
     "zod": "^3.24.2"
   },
   "devDependencies": {

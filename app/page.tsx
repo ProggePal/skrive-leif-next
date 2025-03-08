@@ -3,6 +3,9 @@
 import { experimental_useObject as useObject } from '@ai-sdk/react';
 import { commentSchema } from './api/use-object/schema';
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { Toggle } from "@/components/ui/toggle"
+import { Button } from "@/components/ui/button"
+import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
 
 export default function Page() {
   const { object, submit } = useObject({
@@ -51,10 +54,10 @@ export default function Page() {
 
   const updateContentWithSwap = (originalText: string, improvedText: string, commentIndex: number) => {
     if (!contentRef.current) return;
-    
+
     const content = contentRef.current.textContent || '';
     const isUsingImproved = commentStates[commentIndex];
-    
+
     // If we're using improved text, swap back to original
     if (isUsingImproved) {
       const updatedContent = content.replace(improvedText, originalText);
@@ -66,7 +69,7 @@ export default function Page() {
       contentRef.current.textContent = updatedContent;
       setInputValue(updatedContent);
     }
-    
+
     // Update the state for this specific comment
     setCommentStates(prev => ({
       ...prev,
@@ -111,16 +114,16 @@ export default function Page() {
     if (!comments?.length) return;
 
     if (e.key === 'ArrowLeft') {
-      setSelectedCommentIndex(prev => 
-        prev === null ? comments.length - 1 : 
-        prev === 0 ? comments.length - 1 : 
-        prev - 1
+      setSelectedCommentIndex(prev =>
+        prev === null ? comments.length - 1 :
+          prev === 0 ? comments.length - 1 :
+            prev - 1
       );
     } else if (e.key === 'ArrowRight') {
-      setSelectedCommentIndex(prev => 
-        prev === null ? 0 : 
-        prev === comments.length - 1 ? 0 : 
-        prev + 1
+      setSelectedCommentIndex(prev =>
+        prev === null ? 0 :
+          prev === comments.length - 1 ? 0 :
+            prev + 1
       );
     } else if (e.key === 'Enter') {
       if (selectedCommentIndex !== null) {
@@ -154,7 +157,7 @@ export default function Page() {
 
   const highlightText = useCallback((text: string) => {
     if (!contentRef.current) return;
-    
+
     const content = contentRef.current.textContent || '';
     const index = content.indexOf(text);
     if (index === -1) return;
@@ -182,17 +185,17 @@ export default function Page() {
   }, [selectedCommentIndex, object?.comments, commentStates, highlightText, isCommentComplete]);
 
   return (
-    <div className="centered-container">
-      <div className="centered-content">
-        <div className="text-field-container">
+    <div className="flex justify-center items-start min-h-screen p-8">
+      <div className="w-full max-w-3xl flex flex-col gap-4">
+        <div className="relative">
           <div
             ref={contentRef}
-            className="editable-field"
+            className="w-full min-h-[200px] p-4 text-base leading-relaxed border rounded-lg outline-none whitespace-pre-wrap break-words bg-background"
             contentEditable={isEditing}
             onKeyDown={handleKeyDown}
             data-placeholder="Enter your text here..."
           />
-          <div className="help-text">
+          <div className="text-sm text-muted-foreground mt-2 pl-4">
             {isEditing ? (
               <span>When you're done, press ⌘ + Enter to analyze your text</span>
             ) : (
@@ -200,244 +203,107 @@ export default function Page() {
             )}
           </div>
         </div>
-        <div className="controls-container">
-          <div className="left-controls">
+
+        <div className="flex justify-between items-center">
+          <div>
             {!isEditing && (
-              <button className="control-button" onClick={handleBack}>
+              <Button
+                variant="outline"
+                onClick={handleBack}
+              >
                 Edit
-              </button>
+              </Button>
             )}
           </div>
-          <div className="right-controls">
+          <div>
             {isEditing ? (
-              <button 
-                className="control-button analyze-button"
+              <Button
                 onClick={handleSubmit}
                 disabled={!isEditing}
               >
                 Analyze
-              </button>
+              </Button>
             ) : (
-              <div className="navigation-controls">
-                <button 
-                  className="control-button"
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
                   onClick={() => {
                     const comments = object?.comments;
                     if (comments?.length) {
-                      setSelectedCommentIndex(prev => 
-                        prev === null ? comments.length - 1 : 
-                        prev === 0 ? comments.length - 1 : 
-                        prev - 1
+                      setSelectedCommentIndex(prev =>
+                        prev === null ? comments.length - 1 :
+                          prev === 0 ? comments.length - 1 :
+                            prev - 1
                       );
                     }
                   }}
                 >
-                  ←
-                </button>
-                <button 
-                  className="control-button"
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
                   onClick={() => {
                     const comments = object?.comments;
                     if (comments?.length) {
-                      setSelectedCommentIndex(prev => 
-                        prev === null ? 0 : 
-                        prev === comments.length - 1 ? 0 : 
-                        prev + 1
+                      setSelectedCommentIndex(prev =>
+                        prev === null ? 0 :
+                          prev === comments.length - 1 ? 0 :
+                            prev + 1
                       );
                     }
                   }}
                 >
-                  →
-                </button>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
               </div>
             )}
           </div>
         </div>
 
         {object?.comments?.map((comment, index) => (
-          <div 
-            key={index} 
-            className={`comment-box ${selectedCommentIndex === index ? 'selected' : ''}`}
+          <div
+            key={index}
+            className={`p-4 border rounded-lg cursor-pointer transition-all ${selectedCommentIndex === index
+                ? 'border-primary bg-primary/5'
+                : 'border-border hover:bg-muted/50'
+              }`}
             onClick={() => {
               if (isCommentComplete(comment)) {
                 setSelectedCommentIndex(index);
               }
             }}
           >
-            <p className="sender">Original: {comment?.os}</p>
+            <p className='font-medium italic inline-flex items-center gap-2'><Quote className='w-4 h-4' />{comment?.rsn}</p>
             <p>Improved: {comment?.is}</p>
-            <p>Reason: {comment?.rsn}</p>
-            <div className="comment-controls">
-              <button 
-                className="swap-button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (comment && isCommentComplete(comment) && comment.os && comment.is) {
-                    updateContentWithSwap(comment.os, comment.is, index);
-                  }
-                }}
-              >
-                {commentStates[index] ? 'Use Original' : 'Use Improved'}
-              </button>
-              <span className="version-indicator">
-                {isCommentComplete(comment) ? (
-                  commentStates[index] ? 'Using Improved Version' : 'Using Original Version'
-                ) : 'Loading...'}
+            <p>Original: {comment?.os}</p>
+
+
+            <div className="flex justify-between items-center mt-2">
+              <div>
+
+              </div>
+
+              <span className="text-sm text-muted-foreground italic">
+                <Toggle
+                  pressed={commentStates[index]}
+                  onPressedChange={(pressed: boolean) => {
+                    if (comment && isCommentComplete(comment) && comment.os && comment.is) {
+                      updateContentWithSwap(comment.os, comment.is, index);
+                    }
+                  }}
+                >
+
+                  {isCommentComplete(comment) ? (
+                    commentStates[index] ? 'Using Improved Version' : 'Using Original Version'
+                  ) : 'Loading...'}
+                </Toggle>
               </span>
             </div>
           </div>
         ))}
       </div>
-
-      <style jsx>{`
-        .centered-container {
-          display: flex;
-          justify-content: center;
-          align-items: flex-start;
-          min-height: 100vh;
-          padding: 2rem;
-        }
-
-        .centered-content {
-          width: 100%;
-          max-width: 800px;
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-        }
-
-        .text-field-container {
-          width: 100%;
-          margin-bottom: 1rem;
-          position: relative;
-        }
-
-        .editable-field {
-          width: 100%;
-          min-height: 200px;
-          padding: 1rem;
-          font-size: 16px;
-          line-height: 1.5;
-          border: 1px solid #ccc;
-          border-radius: 8px;
-          outline: none;
-          white-space: pre-wrap;
-          word-wrap: break-word;
-        }
-
-        .editable-field:empty:before {
-          content: attr(data-placeholder);
-          color: #999;
-        }
-
-        .editable-field:not([contentEditable="true"]) {
-          background-color: #f9f9f9;
-        }
-
-        .help-text {
-          font-size: 0.9rem;
-          color: #666;
-          margin-top: 0.5rem;
-          text-align: left;
-          padding-left: 1rem;
-        }
-
-        .controls-container {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin: 1rem 0;
-        }
-
-        .left-controls, .right-controls {
-          display: flex;
-          gap: 0.5rem;
-        }
-
-        .control-button {
-          padding: 0.5rem 1rem;
-          background-color: #f0f0f0;
-          border: 1px solid #ccc;
-          border-radius: 4px;
-          cursor: pointer;
-          font-size: 1rem;
-          transition: all 0.2s ease;
-        }
-
-        .control-button:hover {
-          background-color: #e0e0e0;
-        }
-
-        .control-button.analyze-button {
-          background-color: #0070f3;
-          color: white;
-          border: none;
-        }
-
-        .control-button.analyze-button:hover {
-          background-color: #0051b3;
-        }
-
-        .control-button.analyze-button:disabled {
-          background-color: #ccc;
-          cursor: not-allowed;
-        }
-
-        .navigation-controls {
-          display: flex;
-          gap: 0.5rem;
-        }
-
-        .comment-controls {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-top: 0.5rem;
-        }
-
-        .swap-button {
-          padding: 0.25rem 0.5rem;
-          background-color: #f0f0f0;
-          border: 1px solid #ccc;
-          border-radius: 4px;
-          cursor: pointer;
-          font-size: 0.9rem;
-          transition: all 0.2s ease;
-        }
-
-        .swap-button:hover {
-          background-color: #e0e0e0;
-        }
-
-        .version-indicator {
-          font-size: 0.9em;
-          color: #666;
-          font-style: italic;
-        }
-
-        .comment-box {
-          border: 1px solid #ccc;
-          padding: 1rem;
-          margin-top: 1rem;
-          border-radius: 8px;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-
-        .comment-box:hover {
-          background-color: #f5f5f5;
-        }
-
-        .comment-box.selected {
-          border-color: #0070f3;
-          background-color: #f0f7ff;
-        }
-
-        .sender {
-          font-weight: bold;
-          font-family: 'Courier New', Courier, monospace;
-        }
-      `}</style>
     </div>
   );
 }
