@@ -6,6 +6,14 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Toggle } from "@/components/ui/toggle"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
+import { CommentCarousel } from './components/CommentCarousel';
 
 export default function Page() {
   const { object, submit } = useObject({
@@ -223,86 +231,25 @@ export default function Page() {
               >
                 Analyze
               </Button>
-            ) : (
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => {
-                    const comments = object?.comments;
-                    if (comments?.length) {
-                      setSelectedCommentIndex(prev =>
-                        prev === null ? comments.length - 1 :
-                          prev === 0 ? comments.length - 1 :
-                            prev - 1
-                      );
-                    }
-                  }}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => {
-                    const comments = object?.comments;
-                    if (comments?.length) {
-                      setSelectedCommentIndex(prev =>
-                        prev === null ? 0 :
-                          prev === comments.length - 1 ? 0 :
-                            prev + 1
-                      );
-                    }
-                  }}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
+            ) : null}
           </div>
         </div>
 
-        {object?.comments?.map((comment, index) => (
-          <div
-            key={index}
-            className={`p-4 border rounded-lg cursor-pointer transition-all ${selectedCommentIndex === index
-                ? 'border-primary bg-primary/5'
-                : 'border-border hover:bg-muted/50'
-              }`}
-            onClick={() => {
-              if (isCommentComplete(comment)) {
-                setSelectedCommentIndex(index);
+        {!isEditing && object?.comments && (
+          <CommentCarousel
+            comments={object.comments}
+            selectedCommentIndex={selectedCommentIndex}
+            commentStates={commentStates}
+            onCommentSelect={setSelectedCommentIndex}
+            onCommentToggle={(index: number) => {
+              const comment = object?.comments?.[index];
+              if (comment && isCommentComplete(comment) && comment.os && comment.is) {
+                updateContentWithSwap(comment.os, comment.is, index);
               }
             }}
-          >
-            <p className='font-medium italic inline-flex items-center gap-2'><Quote className='w-4 h-4' />{comment?.rsn}</p>
-            <p>Improved: {comment?.is}</p>
-            <p>Original: {comment?.os}</p>
-
-
-            <div className="flex justify-between items-center mt-2">
-              <div>
-
-              </div>
-
-              <span className="text-sm text-muted-foreground italic">
-                <Toggle
-                  pressed={commentStates[index]}
-                  onPressedChange={(pressed: boolean) => {
-                    if (comment && isCommentComplete(comment) && comment.os && comment.is) {
-                      updateContentWithSwap(comment.os, comment.is, index);
-                    }
-                  }}
-                >
-
-                  {isCommentComplete(comment) ? (
-                    commentStates[index] ? 'Using Improved Version' : 'Using Original Version'
-                  ) : 'Loading...'}
-                </Toggle>
-              </span>
-            </div>
-          </div>
-        ))}
+            isCommentComplete={isCommentComplete}
+          />
+        )}
       </div>
     </div>
   );
