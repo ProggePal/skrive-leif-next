@@ -250,7 +250,7 @@ export default function Page() {
 
         {!isEditing && object?.comments && (
           <CommentCarousel
-            comments={object.comments}
+            comments={object.comments.filter((comment): comment is NonNullable<typeof comment> => comment !== undefined)}
             selectedCommentIndex={selectedCommentIndex}
             commentStates={commentStates}
             onCommentSelect={setSelectedCommentIndex}
