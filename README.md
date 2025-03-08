@@ -1,36 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Skriveleif - AI-Powered Text Editor
 
-## Getting Started
+## Overview
 
-First, run the development server:
+Skriveleif is a text editor designed to help you quickly swap sentences with AI-generated suggestions. It allows you to improve your writing by providing real-time feedback and suggestions, making it easier to enhance clarity and readability.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Current Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- [x] **AI Suggestions**: Get instant suggestions for improving your sentences as you type.
+- [x] **Keyboard Functionality**: Navigate through suggestions and swap sentences using keyboard shortcuts for a smooth editing experience.
+- [x] **Editable Text Area**: The main text area is content-editable, allowing you to type directly and see suggestions in real-time.
+- [x] **Autofocus and Hint Text**: The text area is set to autofocus with placeholder text: "Put your text here to get started..."
+- [x] **Conditional Button Rendering**: The "Analyze" button appears only when there is enough text in the input field.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## How It Works
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. **Input Your Text**: Start typing your text in the editor.
+2. **Receive Suggestions**: As you type, the AI analyzes your sentences and provides suggestions for improvement.
+3. **Swap Sentences**: Use keyboard shortcuts to quickly swap your original sentences with the AI's suggestions.
 
-## Learn More
+## Current Implementation
 
-To learn more about Next.js, take a look at the following resources:
+- The text area is set to autofocus when the page loads, and it includes placeholder text.
+- The "Analyze" button appears only when there is enough text in the input field, ensuring that users can only submit meaningful content.
+- The application tracks the state of comments and allows users to toggle between original and improved versions of sentences.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Future Plans
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Different AI Models**: I plan to integrate various AI models to provide a wider range of suggestions, catering to different writing styles and needs.
+- **Visual Enhancements**: Future updates will include animations to highlight the differences between original and suggested sentences, making it easier to see changes.
+- **User Experience Improvements**: I will continue to refine the user interface to ensure that Skriveleif remains intuitive and user-friendly.
 
-## Deploy on Vercel
+## Conclusion
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Skriveleif is a powerful tool for anyone looking to enhance their writing with the help of AI. With its current features and planned enhancements, it aims to make the writing process more efficient and enjoyable. I invite you to try it out and provide feedback as I continue to develop and improve this innovative text editor.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+Thank you for using Skriveleif! I look forward to your suggestions and feedback.
