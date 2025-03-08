@@ -3,16 +3,9 @@
 import { experimental_useObject as useObject } from '@ai-sdk/react';
 import { commentSchema } from './api/use-object/schema';
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Toggle } from "@/components/ui/toggle"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel"
+import { Badge } from "@/components/ui/badge"
 import { CommentCarousel } from './components/CommentCarousel';
 
 export default function Page() {
@@ -195,17 +188,32 @@ export default function Page() {
   return (
     <div className="flex justify-center items-start min-h-screen p-8">
       <div className="w-full max-w-3xl flex flex-col gap-4">
+        {/* Header */}
+        <div>
+        <div className="w-full flex flex-col md:flex-row justify-between items-center">
+          <h1 className="text-3xl font-bold text-primary mb-1 pb-0">Skriveleif
+            <span className="text-sm text-muted-foreground ml-2">
+              <span className="font-bold"><Badge variant="outline">Aplha</Badge>
+              </span>
+            </span>
+          </h1>
+        </div>
+        <p className="text-md text-muted-foreground text-center md:text-left mb-4">
+         Get suggestions and swap sentence-by-sentence using just the keyboard.
+        </p>
+        </div>
         <div className="relative">
           <div
             ref={contentRef}
             className="w-full min-h-[200px] p-4 text-base leading-relaxed border rounded-lg outline-none whitespace-pre-wrap break-words bg-background"
             contentEditable={isEditing}
             onKeyDown={handleKeyDown}
-            data-placeholder="Enter your text here..."
+            data-placeholder="Put your text here to get started..."
+            autoFocus
           />
-          <div className="text-sm text-muted-foreground mt-2 pl-4">
+          <div className="text-sm text-muted-foreground mt-2 pl-1">
             {isEditing ? (
-              <span>When you're done, press ⌘ + Enter to analyze your text</span>
+              <span> Heads up! Your message will be sent to OpenAI for analysis. Alpha Version - Use with Caution.</span>
             ) : (
               <span>Use ← → to navigate, Space to swap text, double-Esc to edit</span>
             )}
@@ -229,10 +237,15 @@ export default function Page() {
                 onClick={handleSubmit}
                 disabled={!isEditing}
               >
-                Analyze
+                [ ⌘<kbd> + Enter</kbd>] to analyze
               </Button>
             ) : null}
           </div>
+        </div>
+
+             {/* Disclaimer Section */}
+             <div className="text-sm text-muted-foreground text-center mt-4">
+       
         </div>
 
         {!isEditing && object?.comments && (
